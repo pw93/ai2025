@@ -139,19 +139,11 @@ class BTStrategy:
     def run_close_top(self, data):
         self.pt_now = data[-1].c
         self.run_at_close(data)
-
-        pl_close, pl_open, self.trades_current = calculate_profit_loss(self.trades_current, self.pt_now)
-
-        #logi(pl_close, pl_open, self.trades_current)
-
-        # Cumulative closed PnL
-        if not self.pt_win:
-            self.pt_win.append(pl_close)
+        pl_close, pl_open, _ = calculate_profit_loss(self.trades_current, self.pt_now)        
+        if len(self.pt_win)==0:
+            self.pt_win_realtime.append(pl_open)
         else:
-            self.pt_win.append(self.pt_win[-1] + pl_close)
-
-        # Real-time equity = closed PnL + current open PnL (NOT cumulative open PnL!)
-        self.pt_win_realtime.append(self.pt_win[-1] + pl_open)
+            self.pt_win_realtime.append(self.pt_win[-1] + pl_open)
 
 
 
@@ -174,6 +166,12 @@ class BTStrategy:
         td = Trade(price,qty,trade_type)
         self.trades_history.append(td)
         self.trades_current.append(td)
+
+        pl_close, pl_open, self.trades_current = calculate_profit_loss(self.trades_current, self.pt_now)        
+        if not self.pt_win:
+            self.pt_win.append(pl_close)
+        else:
+            self.pt_win.append(self.pt_win[-1] + pl_close)
 
 
     def buy_to_one(self):
